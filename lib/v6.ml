@@ -1,8 +1,10 @@
 module L = Debug.Make (struct let name = __MODULE__ end)
 
-let editions =
-  let open V6_interface in
-  [{title= "xcp-ng"; official_title= "xcp-ng"; code= "xcp-ng"; order= 100}]
+let default_edition =
+  V6_interface.
+    {title= "xcp-ng"; official_title= "xcp-ng"; code= "xcp-ng"; order= 100}
+
+let editions = [default_edition]
 (* TODO: real editions *)
 
 let unsupported_features = Features.[Corosync]
@@ -150,12 +152,20 @@ module Experimental = Custom (struct
   let root = "/etc/xcp/experimental-features.d"
 end)
 
-let apply_edition _dbg edition _params =
+(* Allows to apply edition without reading from the filesystem *)
+let apply_edition_test _dbg _edition _params =
   {
-    V6_interface.edition_name= edition
+    V6_interface.edition_name= default_edition.title
   ; xapi_params
   ; additional_params= Additional.params
-  ; experimental_features= Experimental.list ()
+  ; experimental_features= []
+  }
+
+(* The default edition is hard-coded *)
+let apply_edition dbg edition params =
+  {
+    (apply_edition_test dbg edition params) with
+    experimental_features= Experimental.list ()
   }
 
 let get_editions _dbg = editions
