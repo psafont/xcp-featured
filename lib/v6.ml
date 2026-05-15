@@ -150,12 +150,19 @@ module Experimental = Custom (struct
   let root = "/etc/xcp/experimental-features.d"
 end)
 
-let apply_edition _dbg edition _params =
+(* Allows to apply edition without reading from the filesystem *)
+let apply_edition_test _dbg edition _params =
   {
     V6_interface.edition_name= edition
   ; xapi_params
   ; additional_params= Additional.params
-  ; experimental_features= Experimental.list ()
+  ; experimental_features= []
+  }
+
+let apply_edition dbg edition params =
+  {
+    (apply_edition_test dbg edition params) with
+    experimental_features= Experimental.list ()
   }
 
 let get_editions _dbg = editions
